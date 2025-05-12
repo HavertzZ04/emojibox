@@ -1,8 +1,9 @@
 import reflex as rx
 from app.components.emojis import db
 
+
 # Obtener las categorías únicas
-emojis_categories = list(set(item["category"] for item in db))
+emojis_categories = sorted(set(item["group"] for item in db))
 
 
 class CategoryState(rx.State):
@@ -12,11 +13,13 @@ class CategoryState(rx.State):
         self.selected_category = category
 
     @rx.var
-    def filtered_emojis(self) -> list[str]:
+    def filtered_emojis(self) -> list[dict]:
+        if not self.selected_category:
+            return []
         return [
-            emoji["htmlCode"][0]
+            emoji
             for emoji in db
-            if emoji["category"] == self.selected_category
+            if emoji["group"] == self.selected_category
         ]
 
 
@@ -24,7 +27,7 @@ def categories():
     return rx.box(
         rx.center(
             rx.divider(
-                size='4',
+                size="4",
                 width="90%",
             ),
         ),
@@ -33,7 +36,7 @@ def categories():
             size="9",
             color_scheme="crimson",
             margin_top="35px",
-            align="center"
+            align="center",
         ),
         rx.center(
             rx.grid(
@@ -43,19 +46,19 @@ def categories():
                         category.capitalize(),
                         variant=rx.cond(
                             CategoryState.selected_category == category,
-                            "solid",  # seleccionado
-                            "outline"  # no seleccionado
+                            "solid",
+                            "outline",
                         ),
-                        height="5vh",
+                        height="8vh",
                         width="100%",
                         color_scheme="teal",
                         on_click=lambda c=category: CategoryState.set_category(c),
                         transition="all 0.5s",
-                        size='4',
-                        cursor="pointer"
+                        size="4",
+                        cursor="pointer",
                     ),
                 ),
-                columns="4",
+                columns="5",
                 spacing="4",
                 width="100%",
                 max_width="1000px",
@@ -63,25 +66,33 @@ def categories():
             padding="50px",
             padding_top="40px",
         ),
-        # Aquí mostramos los emojis filtrados según la categoría
         rx.center(
             rx.grid(
                 rx.foreach(
-                    CategoryState.filtered_emojis.to(list[str]),
-                    lambda emoji: rx.box(
-                        rx.text(emoji["htmlCode"][0], font_size="40px"),
-                        rx.text(emoji["name"], size="2", align="center"),
-                        padding="10px",
-                        border="1px solid #e0e0e0",
-                        border_radius="10px",
-                        text_align="center"
+                    CategoryState.filtered_emojis,
+                    lambda emoji: rx.button(
+                        rx.vstack(  
+                            rx.text(emoji["char"], size='9'),  
+                            #rx.text(emoji["name"], size='2'), #to see the emojis names on the cards
+                            align='center' 
+                        ),
+                        padding="40px",
+                        radius="large",
+                        variant="surface",
+                        color_scheme="gray",
+                        cursor="pointer",
+                        on_click=lambda e=emoji: [
+                            rx.set_clipboard(e["char"]),  
+                            rx.toast(f"Emoji {e['char']} copied!")  
+                        ],
+                        _hover={"background_color": "#556261"},
+                        transition="background-color 0.5s",
                     ),
                 ),
-                columns="6",
+                columns="10",
                 spacing="4",
                 width="100%",
                 max_width="1000px",
-                margin_top="30px"
             )
         ),
         margin_top="50px",

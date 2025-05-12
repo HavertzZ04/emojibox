@@ -7,7 +7,7 @@ emojis_categories = sorted(set(item["group"] for item in db))
 
 
 class CategoryState(rx.State):
-    selected_category: str = ""
+    selected_category: str = "Activities"
 
     def set_category(self, category: str):
         self.selected_category = category
@@ -78,15 +78,14 @@ def categories():
                         ),
                         padding="40px",
                         radius="large",
-                        variant="surface",
-                        color_scheme="gray",
                         cursor="pointer",
                         on_click=lambda e=emoji: [
                             rx.set_clipboard(e["char"]),  
                             rx.toast(f"Emoji {e['char']} copied!")  
                         ],
-                        _hover={"background_color": "#556261"},
+                        _hover={"background_color": "#c4cccc"},
                         transition="background-color 0.5s",
+                        style={"background-color": "#85929e"}
                     ),
                 ),
                 columns="10",
